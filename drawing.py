@@ -15,12 +15,21 @@ from reportlab.pdfbase.ttfonts import TTFont
 
 font_path = 'fonts/msjh.ttc'
 try:
+    # 嘗試載入並註冊字體檔案
     font_manager.fontManager.addfont(font_path)
-except FileNotFoundError:
-    print(f"Warning: Custom font file not found at {font_path}. Please check if 'fonts/msjh.ttc' is uploaded.")
+    # 如果成功，設定 Matplotlib 參數
+    plt.rcParams['font.family'] = 'msjh'
+    plt.rcParams['axes.unicode_minus'] = False
+    
+    # 在 Streamlit 介面上顯示成功訊息
+    st.sidebar.success(f"字體載入成功: {font_path}")
 
-plt.rcParams['font.family'] = 'msjh'
-plt.rcParams['axes.unicode_minus'] = False
+except FileNotFoundError:
+    # 如果失敗，顯示警告訊息
+    st.sidebar.error(f"錯誤：找不到字體檔案 {font_path}！請確認檔案已上傳。")
+    # 為了讓程式碼能繼續執行，退回使用 Streamlit 預設字體
+    plt.rcParams['font.family'] = 'sans-serif'
+    plt.rcParams['axes.unicode_minus'] = False
 
 st.set_page_config(page_title="抽卡策略分析器", layout="wide")
 st.title("🎮 互動式多次活動抽卡策略分析器")
@@ -162,6 +171,7 @@ st.download_button(
     file_name="模擬報表.xlsx",
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 )
+
 
 
 
