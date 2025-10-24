@@ -14,6 +14,11 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
 font_path = 'fonts/msjh.ttc'
+try:
+    font_manager.fontManager.addfont(font_path)
+except FileNotFoundError:
+    print(f"Warning: Custom font file not found at {font_path}. Please check if 'fonts/msjh.ttc' is uploaded.")
+
 plt.rcParams['font.family'] = 'msjh'
 plt.rcParams['axes.unicode_minus'] = False
 
@@ -157,6 +162,7 @@ st.download_button(
     file_name="模擬報表.xlsx",
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 )
+
 
 
 
