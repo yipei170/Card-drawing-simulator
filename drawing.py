@@ -14,6 +14,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 
 plt.rcParams['font.family'] = 'Microsoft JhengHei'
 plt.rcParams['axes.unicode_minus'] = False
+pdfmetrics.registerFont(TTFont('NotoSansCJK', './fonts/NotoSansCJKtc-Regular.otf'))
 
 st.set_page_config(page_title="抽卡策略分析器", layout="wide")
 st.title("🎮 互動式多次活動抽卡策略分析器")
@@ -154,4 +155,5 @@ st.download_button(
     data=open("gacha_multi_event.xlsx", "rb").read(),
     file_name="模擬報表.xlsx",
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
 )
