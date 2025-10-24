@@ -1,0 +1,7 @@
+      # --- 確保這個步驟在您的 Python 執行之前被執行 ---
+      - name: Install Chinese font for Matplotlib
+        run: |
+          sudo apt-get update
+          # 安裝文泉驛正黑字體 (SimHei 的別名)
+          sudo apt-get install -y fonts-wqy-zenhei
+      # -------------------------------------------------
