@@ -16,16 +16,11 @@ from reportlab.pdfbase.ttfonts import TTFont
 font_path = 'fonts/msjh.ttc'
 try:
     font_manager.fontManager.addfont(font_path)
-    # 2. 獲取字體屬性，這會讀取字體檔案內建的家族名稱
     prop = font_manager.FontProperties(fname=font_path)
-    font_family_name = prop.get_name() # 獲取字體檔案的實際家族名稱 (例如: 'Microsoft JhengHei')
+    font_family_name = prop.get_name()   # 獲取字體檔案的實際家族名稱 (例如: 'Microsoft JhengHei')
     
-    # 3. 使用實際的字體家族名稱來設定 Matplotlib
     plt.rcParams['font.family'] = font_family_name
     plt.rcParams['axes.unicode_minus'] = False
-    
-    # 診斷訊息 (可選，用於確認)
-    # st.sidebar.success(f"Matplotlib 字體設定成功: {font_family_name}")
 
 except Exception as e:
     # 如果檔案找不到或其他錯誤，退回預設
@@ -172,6 +167,7 @@ st.download_button(
     file_name="模擬報表.xlsx",
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 )
+
 
 
 
