@@ -11,6 +11,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+import os
 
 plt.rcParams['font.family'] = 'Microsoft JhengHei'
 plt.rcParams['axes.unicode_minus'] = False
@@ -19,7 +20,7 @@ st.set_page_config(page_title="抽卡策略分析器", layout="wide")
 st.title("🎮 互動式多次活動抽卡策略分析器")
 
 # ------------------------------
-# 輸入設定
+# 模擬設定 Sidebar
 st.sidebar.header("模擬設定")
 n_players = st.sidebar.number_input("玩家數量", value=1000, step=100)
 limit = st.sidebar.number_input("抽卡上限", value=50, step=1)
@@ -33,39 +34,48 @@ cost_per_pull = st.sidebar.number_input("每抽花費", value=100)
 n_events = st.sidebar.number_input("模擬活動次數", value=50, step=1)
 
 # ------------------------------
-# 抽卡模擬函式
-random.seed(1234)
-np.random.seed(1234)
-def draw(p_ssr, p_sr, step, bonus, limit):
-    counter = 0
-    current_p_ssr = p_ssr
-    for i in range(1, limit + 1):
-        r = random.random()
-        if r < current_p_ssr:
-            return i, 'SSR'
-        elif r < current_p_ssr + p_sr:
-            rarity = 'SR'
-        else:
-            rarity = 'R'
-        counter += 1
-        if counter % step == 0:
-            current_p_ssr = min(current_p_ssr + bonus, 1.0)
-    return limit, 'SSR'
+# Gacha 模擬 Class
+class GachaSimulator:
+    def __init__(self, limit, step, bonus, cost_per_pull, seed=1234):
+        self.limit = limit
+        self.step = step
+        self.bonus = bonus
+        self.cost_per_pull = cost_per_pull
+        random.seed(seed)
+        np.random.seed(seed)
+    
+    def draw(self, p_ssr, p_sr):
+        counter = 0
+        current_p_ssr = p_ssr
+        for i in range(1, self.limit + 1):
+            r = random.random()
+            if r < current_p_ssr:
+                return i, 'SSR'
+            elif r < current_p_ssr + p_sr:
+                rarity = 'SR'
+            else:
+                rarity = 'R'
+            counter += 1
+            if counter % self.step == 0:
+                current_p_ssr = min(current_p_ssr + self.bonus, 1.0)
+        return self.limit, 'SSR'
 
-def simulate(n_players, p_ssr, p_sr):
-    results = [draw(p_ssr, p_sr, step, bonus, limit) for _ in range(n_players)]
-    df = pd.DataFrame(results, columns=['pulls_needed', 'rarity'])
-    df['cost'] = df['pulls_needed'] * cost_per_pull
-    return df
+    def simulate(self, n_players, p_ssr, p_sr):
+        results = [self.draw(p_ssr, p_sr) for _ in range(n_players)]
+        df = pd.DataFrame(results, columns=['pulls_needed', 'rarity'])
+        df['cost'] = df['pulls_needed'] * self.cost_per_pull
+        return df
 
 # ------------------------------
 # 蒙地卡羅模擬
+simulator = GachaSimulator(limit, step, bonus, cost_per_pull)
+
 all_summary_before = []
 all_summary_after = []
 
-for i in range(n_events):
-    df_b = simulate(n_players, p_ssr_before, p_sr_before)
-    df_a = simulate(n_players, p_ssr_after, p_sr_after)
+for _ in range(n_events):
+    df_b = simulator.simulate(n_players, p_ssr_before, p_sr_before)
+    df_a = simulator.simulate(n_players, p_ssr_after, p_sr_after)
     all_summary_before.append(df_b['cost'].mean())
     all_summary_after.append(df_a['cost'].mean())
 
@@ -76,7 +86,7 @@ summary_df = pd.DataFrame({
 })
 
 # ------------------------------
-# 信賴區間計算
+# 信賴區間
 def ci_95(series):
     mean = series.mean()
     std = series.std()
@@ -102,45 +112,45 @@ ax.set_title("平均抽卡成本分布")
 ax.legend()
 st.pyplot(fig)
 
-# 將圖表存成 BytesIO
-img = BytesIO()
-fig.savefig(img, format='png', bbox_inches='tight')
-img.seek(0)
-
 # ------------------------------
 # 產生 PDF
-def pdf():
-    # 註冊中文字體
-    pdfmetrics.registerFont(TTFont('msjh', './fonts/msjh.ttc'))
-
+def generate_pdf():
     buffer = BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4)
     styles = getSampleStyleSheet()
-    styles["Normal"].fontName = "msjh"
-    styles["Title"].fontName = "msjh"
-    elements = []
 
+    # 嘗試註冊中文字體
+    font_path = "./msjh.ttc"
+    if os.path.exists(font_path):
+        pdfmetrics.registerFont(TTFont("msjh", font_path))
+        styles["Normal"].fontName = "msjh"
+        styles["Title"].fontName = "msjh"
+    else:
+        st.warning("找不到字體檔 msjh.ttc，PDF 將使用預設字體")
+
+    elements = []
     elements.append(Paragraph("多次活動抽卡策略分析報告", styles["Title"]))
     elements.append(Spacer(1, 12))
-
-    elements.append(Paragraph(f"玩家數量:{n_players}  抽卡上限:{limit} ", styles["Normal"]))
-    elements.append(Paragraph(f"SSR機率(活動前):{p_ssr_before:.2f}  SSR機率(活動後):{p_ssr_after:.2f} ",styles["Normal"]))
-    elements.append(Paragraph(f"SR 機率(活動前):{p_sr_before:.2f}  SR機率(活動後):{p_sr_after:.2f}",styles["Normal"]))
-    elements.append(Paragraph(f"保底累積:{step}  保底增加機率:{bonus:.2f} "
-                              f" 每抽花費:{cost_per_pull}  模擬活動次數:{n_events}", styles["Normal"]))
+    elements.append(Paragraph(f"玩家數量:{n_players}  抽卡上限:{limit}", styles["Normal"]))
+    elements.append(Paragraph(f"SSR機率(活動前):{p_ssr_before:.2f}  SSR機率(活動後):{p_ssr_after:.2f}", styles["Normal"]))
+    elements.append(Paragraph(f"SR機率(活動前):{p_sr_before:.2f}  SR機率(活動後):{p_sr_after:.2f}", styles["Normal"]))
+    elements.append(Paragraph(f"保底累積:{step}  保底增加機率:{bonus:.2f} 每抽花費:{cost_per_pull}  模擬活動次數:{n_events}", styles["Normal"]))
     elements.append(Paragraph(f"活動前平均成本(95%CI): {mean_before:.2f} ({ci_lower_before:.2f} ~ {ci_upper_before:.2f})", styles["Normal"]))
     elements.append(Paragraph(f"活動後平均成本(95%CI): {mean_after:.2f} ({ci_lower_after:.2f} ~ {ci_upper_after:.2f})", styles["Normal"]))
     elements.append(Spacer(1, 12))
 
-    # 插入圖表
-    elements.append(Image(img, width=400, height=250))
+    # 將圖表存入 BytesIO
+    img_buffer = BytesIO()
+    fig.savefig(img_buffer, format="png", bbox_inches="tight")
+    img_buffer.seek(0)
+    elements.append(Image(img_buffer, width=400, height=250))
     elements.append(Spacer(1, 12))
 
     doc.build(elements)
     buffer.seek(0)
     return buffer
 
-pdf_data = pdf()
+pdf_data = generate_pdf()
 st.download_button(
     "下載 PDF 報告",
     data=pdf_data,
@@ -148,17 +158,20 @@ st.download_button(
     mime="application/pdf"
 )
 
-output = BytesIO()
-with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-    summary_df.to_excel(writer, sheet_name='Summary', index=False)
-output.seek(0)
+# ------------------------------
+# 產生 Excel
+def generate_excel():
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        summary_df.to_excel(writer, sheet_name='Summary', index=False)
+    output.seek(0)
+    return output
 
+excel_data = generate_excel()
 st.download_button(
     "下載 Excel 報表",
-    data=output,
+    data=excel_data,
     file_name="模擬報表.xlsx",
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 )
-
-
 
