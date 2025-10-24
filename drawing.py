@@ -111,7 +111,7 @@ img.seek(0)
 # 產生 PDF
 def pdf():
     # 註冊中文字體
-    pdfmetrics.registerFont(TTFont('msjh', 'C:/Windows/Fonts/msjh.ttc'))
+    pdfmetrics.registerFont(TTFont('msjh', './fonts/msjh.ttc'))
 
     buffer = BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4)
@@ -148,13 +148,17 @@ st.download_button(
     mime="application/pdf"
 )
 
-with pd.ExcelWriter("gacha_multi_event.xlsx") as writer: summary_df.to_excel(writer, sheet_name='Summary', index=False)
+output = BytesIO()
+with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+    summary_df.to_excel(writer, sheet_name='Summary', index=False)
+output.seek(0)
+
 st.download_button(
     "下載 Excel 報表",
-    data=open("gacha_multi_event.xlsx", "rb").read(),
+    data=output,
     file_name="模擬報表.xlsx",
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-
 )
+
 
 
