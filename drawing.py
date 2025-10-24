@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
+from matplotlib import font_manager
 
 from io import BytesIO
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, Table, TableStyle
@@ -12,7 +13,9 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
-plt.rcParams['font.family'] = 'Microsoft JhengHei'
+font_path = 'fonts/msjh.ttc'
+
+plt.rcParams['font.family'] = 'msjh'
 plt.rcParams['axes.unicode_minus'] = False
 
 st.set_page_config(page_title="抽卡策略分析器", layout="wide")
@@ -155,4 +158,5 @@ st.download_button(
     file_name="模擬報表.xlsx",
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 )
+
 
