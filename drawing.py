@@ -15,7 +15,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 
 font_path = 'fonts/msjh.ttc'
 
-plt.rcParams['font.family'] = 'msjh'
+plt.rcParams['font.family'] = 'Microsoft JhengHei'
 plt.rcParams['axes.unicode_minus'] = False
 
 st.set_page_config(page_title="抽卡策略分析器", layout="wide")
@@ -158,5 +158,6 @@ st.download_button(
     file_name="模擬報表.xlsx",
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 )
+
 
 
