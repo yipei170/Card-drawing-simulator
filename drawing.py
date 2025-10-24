@@ -111,7 +111,7 @@ img.seek(0)
 # 產生 PDF
 def pdf():
     # 註冊中文字體
-    pdfmetrics.registerFont(TTFont('msjh', 'C:/Windows/Fonts/msjh.ttc'))
+    pdfmetrics.registerFont(TTFont('msjh', 'fonts/msjh.ttc'))
 
     buffer = BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4)
@@ -155,3 +155,4 @@ st.download_button(
     file_name="模擬報表.xlsx",
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 )
+
