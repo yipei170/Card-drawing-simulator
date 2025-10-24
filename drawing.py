@@ -15,19 +15,20 @@ from reportlab.pdfbase.ttfonts import TTFont
 
 font_path = 'fonts/msjh.ttc'
 try:
-    # 嘗試載入並註冊字體檔案
     font_manager.fontManager.addfont(font_path)
-    # 如果成功，設定 Matplotlib 參數
-    plt.rcParams['font.family'] = 'msjh'
+    # 2. 獲取字體屬性，這會讀取字體檔案內建的家族名稱
+    prop = font_manager.FontProperties(fname=font_path)
+    font_family_name = prop.get_name() # 獲取字體檔案的實際家族名稱 (例如: 'Microsoft JhengHei')
+    
+    # 3. 使用實際的字體家族名稱來設定 Matplotlib
+    plt.rcParams['font.family'] = font_family_name
     plt.rcParams['axes.unicode_minus'] = False
     
-    # 在 Streamlit 介面上顯示成功訊息
-    st.sidebar.success(f"字體載入成功: {font_path}")
+    # 診斷訊息 (可選，用於確認)
+    # st.sidebar.success(f"Matplotlib 字體設定成功: {font_family_name}")
 
-except FileNotFoundError:
-    # 如果失敗，顯示警告訊息
-    st.sidebar.error(f"錯誤：找不到字體檔案 {font_path}！請確認檔案已上傳。")
-    # 為了讓程式碼能繼續執行，退回使用 Streamlit 預設字體
+except Exception as e:
+    # 如果檔案找不到或其他錯誤，退回預設
     plt.rcParams['font.family'] = 'sans-serif'
     plt.rcParams['axes.unicode_minus'] = False
 
@@ -171,6 +172,7 @@ st.download_button(
     file_name="模擬報表.xlsx",
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 )
+
 
 
 
