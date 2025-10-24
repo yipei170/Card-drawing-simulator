@@ -12,8 +12,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
-plt.rcParams['font.family'] = 'Microsoft JhengHei'
-plt.rcParams['axes.unicode_minus'] = False
+
 pdfmetrics.registerFont(TTFont('NotoSansCJK', './fonts/NotoSansCJKtc-Regular.otf'))
 
 st.set_page_config(page_title="抽卡策略分析器", layout="wide")
@@ -157,3 +156,4 @@ st.download_button(
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
 )
+
