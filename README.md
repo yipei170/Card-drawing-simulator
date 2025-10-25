@@ -1,4 +1,4 @@
-## 抽卡策略分析器 (Gacha Strategy Simulator)
+## 抽卡策略分析器 (Card Drawing Simulator)
 這是一個使用 **Python + Streamlit** 製作的抽卡模擬工具，  
 用於分析活動前後的抽卡成本變化與機率差異，  
 幫助設計者或玩家理解不同抽卡策略的影響。
